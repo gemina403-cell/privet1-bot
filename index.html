@@ -560,10 +560,50 @@ function sendToTelegram() {
     font: font
   }));
   
-  // Меняем статус
-  setTimeout(() => {
-    document.getElementById('tgStatus').innerHTML = '✅ Отправлено!';
-  }, 500);
+// ===== УПРОЩЕННАЯ ОТПРАВКА В TELEGRAM =====
+function sendToTelegram() {
+  // Проверяем есть ли фото
+  if (!img) {
+    alert('Сначала загрузи фото!');
+    return;
+  }
+  
+  // Показываем статус
+  document.getElementById('tgStatus').innerHTML = '⏳ Отправка...';
+  
+  try {
+    // Получаем canvas
+    const canvas = document.getElementById('canvas');
+    
+    // Создаем очень маленькое изображение (чтобы точно прошло)
+    const smallCanvas = document.createElement('canvas');
+    smallCanvas.width = 300;  // Уменьшаем размер
+    smallCanvas.height = 300;
+    const ctx = smallCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, 0, 300, 300);
+    
+    // Конвертируем в JPEG с сильным сжатием
+    const imageData = smallCanvas.toDataURL('image/jpeg', 0.6);
+    
+    // Отправляем в Telegram
+    if (window.Telegram?.WebApp) {
+      Telegram.WebApp.sendData(imageData);  // Отправляем просто строку, без JSON
+      
+      // Меняем статус
+      document.getElementById('tgStatus').innerHTML = '✅ Отправлено!';
+      setTimeout(() => {
+        document.getElementById('tgStatus').innerHTML = '⚡ Telegram Mini App';
+      }, 2000);
+    } else {
+      alert('Это не Telegram!');
+      document.getElementById('tgStatus').innerHTML = '❌ Ошибка: не Telegram';
+    }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+    document.getElementById('tgStatus').innerHTML = '❌ Ошибка';
+    console.error(e);
+  }
+   }
 }
 
 // Начальный рисунок
