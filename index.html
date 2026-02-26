@@ -518,19 +518,38 @@ function draw() {
   }
 }
 
-// СОХРАНИТЬ НА ТЕЛЕФОН
+// СОХРАНИТЬ НА ТЕЛЕФОН (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 function generate() {
   if (!img) {
     alert('Сначала загрузи фото!');
     return;
   }
+  
   const canvas = document.getElementById('canvas');
-  const link = document.createElement('a');
-  link.download = 'privet_avatar.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  document.getElementById('status').innerHTML = '✅ Фото сохранено';
-}
+  const imageData = canvas.toDataURL('image/png');
+  
+  // Способ 1: Пытаемся скачать
+  try {
+    const link = document.createElement('a');
+    link.download = 'privet_avatar.png';
+    link.href = imageData;
+    link.click();
+    document.getElementById('status').innerHTML = '✅ Фото сохранено';
+  } catch (e) {
+    // Способ 2: Если не работает, открываем в новой вкладке
+    const newWindow = window.open();
+    newWindow.document.write(`
+      <html>
+        <head><title>PRIVET Avatar</title></head>
+        <body style="margin:0; background:#0a0c12; display:flex; justify-content:center; align-items:center; min-height:100vh;">
+          <img src="${imageData}" style="max-width:100%; max-height:100vh; border:3px solid #ff3eb5; border-radius:20px; box-shadow:0 0 30px #ff3eb5;">
+        </body>
+      </html>
+    `);
+    newWindow.document.close();
+    document.getElementById('status').innerHTML = '✅ Фото открыто (нажми и держи чтобы сохранить)';
+  }
+ }
 
 // ===== НОВАЯ ФУНКЦИЯ: ОТКРЫТЬ В БРАУЗЕРЕ =====
 function openInBrowser() {
