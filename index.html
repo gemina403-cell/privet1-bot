@@ -238,10 +238,10 @@
 // Инициализация Telegram Web App
 const tg = window.Telegram?.WebApp;
 if (tg) {
-  tg.expand(); // Растягиваем на весь экран
-  tg.setHeaderColor('#0a0c12'); // Цвет шапки
-  tg.setBackgroundColor('#0a0c12'); // Цвет фона
-  tg.enableClosingConfirmation(); // Спрашивать при закрытии
+  tg.expand();
+  tg.setHeaderColor('#0a0c12');
+  tg.setBackgroundColor('#0a0c12');
+  tg.enableClosingConfirmation();
 }
 
 let img = null;
@@ -535,36 +535,17 @@ function generate() {
   link.click();
 }
 
-// ОТПРАВИТЬ В TELEGRAM
-function sendToTelegram() {
-  if (!img) {
-    alert('Сначала загрузи фото!');
-    return;
-  }
-  
-  if (!tg) {
-    alert('Это не Telegram!');
-    return;
-  }
-  
-  const canvas = document.getElementById('canvas');
-  const dataUrl = canvas.toDataURL('image/png');
-  
-  // Показываем статус
-  document.getElementById('tgStatus').innerHTML = '⏳ Отправка...';
-  
-  // Отправляем в бота
-  tg.sendData(JSON.stringify({
-    image: dataUrl,
-    color: color,
-    font: font
-  }));
-  
-// ===== УПРОЩЕННАЯ ОТПРАВКА В TELEGRAM =====
+// ===== ИСПРАВЛЕННАЯ ОТПРАВКА В TELEGRAM =====
 function sendToTelegram() {
   // Проверяем есть ли фото
   if (!img) {
     alert('Сначала загрузи фото!');
+    return;
+  }
+  
+  // Проверяем что это Telegram
+  if (!window.Telegram?.WebApp) {
+    alert('Это не Telegram!');
     return;
   }
   
@@ -575,35 +556,32 @@ function sendToTelegram() {
     // Получаем canvas
     const canvas = document.getElementById('canvas');
     
-    // Создаем очень маленькое изображение (чтобы точно прошло)
+    // Создаем маленькое изображение
     const smallCanvas = document.createElement('canvas');
-    smallCanvas.width = 300;  // Уменьшаем размер
+    smallCanvas.width = 300;
     smallCanvas.height = 300;
     const ctx = smallCanvas.getContext('2d');
     ctx.drawImage(canvas, 0, 0, 300, 300);
     
-    // Конвертируем в JPEG с сильным сжатием
-    const imageData = smallCanvas.toDataURL('image/jpeg', 0.6);
+    // Конвертируем в JPEG со сжатием
+    const imageData = smallCanvas.toDataURL('image/jpeg', 0.7);
     
     // Отправляем в Telegram
-    if (window.Telegram?.WebApp) {
-      Telegram.WebApp.sendData(imageData);  // Отправляем просто строку, без JSON
-      
-      // Меняем статус
-      document.getElementById('tgStatus').innerHTML = '✅ Отправлено!';
-      setTimeout(() => {
-        document.getElementById('tgStatus').innerHTML = '⚡ Telegram Mini App';
-      }, 2000);
-    } else {
-      alert('Это не Telegram!');
-      document.getElementById('tgStatus').innerHTML = '❌ Ошибка: не Telegram';
-    }
+    window.Telegram.WebApp.sendData(imageData);
+    
+    // Меняем статус
+    document.getElementById('tgStatus').innerHTML = '✅ Отправлено!';
+    
+    // Возвращаем надпись через 2 секунды
+    setTimeout(() => {
+      document.getElementById('tgStatus').innerHTML = '⚡ Telegram Mini App';
+    }, 2000);
+    
   } catch (e) {
     alert('Ошибка: ' + e.message);
     document.getElementById('tgStatus').innerHTML = '❌ Ошибка';
     console.error(e);
   }
-   }
 }
 
 // Начальный рисунок
@@ -611,4 +589,4 @@ draw();
 </script>
 
 </body>
-</html>
+ </html>
